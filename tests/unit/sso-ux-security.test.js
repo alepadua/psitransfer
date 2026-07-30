@@ -95,5 +95,4 @@ test('authorizeBucketSso Open Redirect Sanitization & User Email Payload', () =>
   assert.equal(jsonPayload.error, 'ORG_DENIED');
   assert.equal(jsonPayload.userEmail, 'alice@other.com');
   assert.equal(jsonPayload.userOrg, 'other.com');
-  assert.equal(jsonPayload.requiredOrg, 'bank.com');
 });

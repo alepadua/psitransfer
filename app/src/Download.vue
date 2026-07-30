@@ -309,7 +309,6 @@
                 this.ssoMessage = resData.message;
                 this.ssoUserEmail = resData.userEmail || '';
                 this.ssoUserOrg = resData.userOrg || '';
-                this.ssoRequiredOrg = resData.requiredOrg || '';
                 this.loading = false;
                 return;
               }
