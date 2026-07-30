@@ -77,4 +77,12 @@ module.exports = {
   standardTransfer: "Transferência Padrão (Pública / Apenas Senha)",
   orgTransfer: "Transferência Segura por Organização (Exige SSO)",
   selectOrg: "Selecione a Organização Destino",
+  highSecurityTransferTitle: "Transferência de Alta Segurança por Organização",
+  ssoNoticeMessage: "Para acessar os arquivos compartilhados para {org}, por favor autentique-se com sua conta corporativa.",
+  ssoDualAuthNotice: "Nota: Esta transferência exige Autenticação SSO + Senha do Arquivo.",
+  ssoSignInWith: "Entrar com SSO de {org}",
+  ssoAutoRedirecting: "Redirecionando para o SSO corporativo em {seconds} segundos...",
+  ssoRedirectNow: "Redirecionar Agora",
+  ssoSwitchAccount: "Alternar Conta / Sair do SSO",
+  ssoLoggedInAs: "Conectado atualmente como",
 };

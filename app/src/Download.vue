@@ -7,17 +7,33 @@
       strong
         icon.fa-fw(name="exclamation-triangle")
         |  {{ error }}
-    .well(v-if='ssoRequired')
-      h3 High-Security Organization Transfer
-      p {{ ssoMessage }}
-      p
-        a.btn.btn-primary(:href='ssoLoginUrl')
+
+    .well.sso-card(v-if='ssoRequired')
+      h3.text-primary
+        icon.fa-fw(name="shield-alt")
+        |  {{ $root.lang.highSecurityTransferTitle || 'High-Security Organization Transfer' }}
+      p.lead(v-if="ssoOrgName") {{ ($root.lang.ssoNoticeMessage || 'To access files shared for {org}, please authenticate with your corporate account.').replace('{org}', ssoOrgName) }}
+      p.alert.alert-info(v-if="ssoHasPassword")
+        icon.fa-fw(name="key")
+        |  {{ $root.lang.ssoDualAuthNotice || 'Note: This transfer requires SSO Authentication + Password Decryption.' }}
+      p(style="margin-top: 15px;")
+        a.btn.btn-lg.btn-primary(:href='ssoLoginUrl', @click="clearAutoRedirectTimer")
           icon.fa-fw(name="shield-alt")
-          |  Sign in with {{ ssoOrgName }} SSO
+          |  {{ ($root.lang.ssoSignInWith || 'Sign in with {org} SSO').replace('{org}', ssoOrgName) }}
+      p.text-muted.small(v-if="autoRedirectSeconds > 0", style="margin-top: 10px;")
+        | {{ ($root.lang.ssoAutoRedirecting || 'Redirecting to corporate SSO in {seconds} seconds...').replace('{seconds}', autoRedirectSeconds) }} 
+        a(@click.prevent="clearAutoRedirectTimer", style="cursor: pointer; text-decoration: underline;") [Cancel]
+
     .alert.alert-danger(v-if='ssoDenied')
       strong
         icon.fa-fw(name="exclamation-triangle")
         |  {{ ssoMessage }}
+      div(v-if="ssoUserEmail", style="margin-top: 10px;")
+        p.small {{ $root.lang.ssoLoggedInAs || 'Currently signed in as' }}: <strong>{{ ssoUserEmail }}</strong> ({{ ssoUserOrg }})
+        button.btn.btn-sm.btn-warning(@click="switchSsoAccount")
+          icon.fa-fw(name="sign-out-alt")
+          |  {{ $root.lang.ssoSwitchAccount || 'Switch SSO Account' }}
+
     .well(v-if='needsPassword && !ssoRequired && !ssoDenied')
       h3 {{ $root.lang.password }}
       .form-group
@@ -99,6 +115,7 @@
   import 'vue-awesome/icons/key';
   import 'vue-awesome/icons/eye';
   import 'vue-awesome/icons/shield-alt';
+  import 'vue-awesome/icons/sign-out-alt';
 
   function getPreviewType(file, maxSize) {
     if(!file || !file.metadata) return false;
@@ -136,6 +153,12 @@
         ssoLoginUrl: '',
         ssoOrgName: '',
         ssoMessage: '',
+        ssoHasPassword: false,
+        ssoUserEmail: '',
+        ssoUserOrg: '',
+        ssoRequiredOrg: '',
+        autoRedirectTimer: null,
+        autoRedirectSeconds: 0,
       }
     },
 
@@ -204,6 +227,31 @@
         return !(value !== value || value === Infinity || value === -Infinity);
       },
 
+      switchSsoAccount() {
+        document.location.href = this.baseURI + 'auth/sso/logout?returnTo=' + encodeURIComponent(document.location.pathname);
+      },
+
+      clearAutoRedirectTimer() {
+        if (this.autoRedirectTimer) {
+          clearInterval(this.autoRedirectTimer);
+          this.autoRedirectTimer = null;
+        }
+        this.autoRedirectSeconds = 0;
+      },
+
+      startAutoRedirect() {
+        this.autoRedirectSeconds = 4;
+        this.autoRedirectTimer = setInterval(() => {
+          this.autoRedirectSeconds--;
+          if (this.autoRedirectSeconds <= 0) {
+            this.clearAutoRedirectTimer();
+            if (this.ssoLoginUrl) {
+              document.location.href = this.ssoLoginUrl;
+            }
+          }
+        }, 1000);
+      },
+
       fetchBucket() {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', this.sid + '.json');
@@ -238,7 +286,9 @@
                 this.ssoLoginUrl = resData.loginUrl;
                 this.ssoOrgName = resData.orgName || resData.org;
                 this.ssoMessage = resData.message;
+                this.ssoHasPassword = !!resData.hasPassword;
                 this.loading = false;
+                this.startAutoRedirect();
                 return;
               }
             } catch {
@@ -257,6 +307,9 @@
               if (resData.error === 'ORG_DENIED') {
                 this.ssoDenied = true;
                 this.ssoMessage = resData.message;
+                this.ssoUserEmail = resData.userEmail || '';
+                this.ssoUserOrg = resData.userOrg || '';
+                this.ssoRequiredOrg = resData.requiredOrg || '';
                 this.loading = false;
                 return;
               }
@@ -276,6 +329,10 @@
 
     beforeMount() {
       this.fetchBucket();
+    },
+
+    beforeDestroy() {
+      this.clearAutoRedirectTimer();
     }
   }
 </script>
