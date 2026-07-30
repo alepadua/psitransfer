@@ -12,7 +12,7 @@ const eventBus = require('./lib/eventBus');
  */
 
 let server;
-if(config.port) {
+if (config.port) {
   // HTTP Server
   server = app.listen(config.port, config.iface, () => {
     console.log(`PsiTransfer listening on http://${config.iface}:${config.port}`);
@@ -21,37 +21,35 @@ if(config.port) {
 }
 
 let httpsServer;
-if(config.sslPort && config.sslKeyFile && config.sslCertFile) {
+if (config.sslPort && config.sslKeyFile && config.sslCertFile) {
   // HTTPS Server
   const sslOpts = {
     key: fs.readFileSync(config.sslKeyFile),
-    cert: fs.readFileSync(config.sslCertFile)
+    cert: fs.readFileSync(config.sslCertFile),
   };
-  httpsServer = https.createServer(sslOpts, app)
-    .listen(config.sslPort, config.iface, () => {
-      console.log(`PsiTransfer listening on https://${config.iface}:${config.sslPort}`);
-      eventBus.emit('listen', httpsServer);
-    });
+  httpsServer = https.createServer(sslOpts, app).listen(config.sslPort, config.iface, () => {
+    console.log(`PsiTransfer listening on https://${config.iface}:${config.sslPort}`);
+    eventBus.emit('listen', httpsServer);
+  });
 }
-
 
 // graceful shutdown
 function shutdown() {
   console.log('PsiTransfer shutting down...');
   eventBus.emit('shutdown', server || httpsServer);
-  if(server) {
+  if (server) {
     server.close(() => {
       server = false;
-      if(!server && !httpsServer) process.exit(0);
+      if (!server && !httpsServer) process.exit(0);
     });
   }
-  if(httpsServer) {
+  if (httpsServer) {
     httpsServer.close(() => {
       httpsServer = false;
-      if(!server && !httpsServer) process.exit(0);
+      if (!server && !httpsServer) process.exit(0);
     });
   }
-  setTimeout(function() {
+  setTimeout(function () {
     console.log('Could not close connections in time, forcefully shutting down');
     process.exit(1);
   }, 15 * 1000);

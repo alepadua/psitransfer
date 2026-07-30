@@ -7,7 +7,18 @@
       strong
         icon.fa-fw(name="exclamation-triangle")
         |  {{ error }}
-    .well(v-if='needsPassword')
+    .well(v-if='ssoRequired')
+      h3 High-Security Organization Transfer
+      p {{ ssoMessage }}
+      p
+        a.btn.btn-primary(:href='ssoLoginUrl')
+          icon.fa-fw(name="shield-alt")
+          |  Sign in with {{ ssoOrgName }} SSO
+    .alert.alert-danger(v-if='ssoDenied')
+      strong
+        icon.fa-fw(name="exclamation-triangle")
+        |  {{ ssoMessage }}
+    .well(v-if='needsPassword && !ssoRequired && !ssoDenied')
       h3 {{ $root.lang.password }}
       .form-group
         input.form-control(type='password', v-model='password', @keyup.enter='password.length && fetchBucket()' autofocus)
@@ -87,6 +98,7 @@
   import 'vue-awesome/icons/download';
   import 'vue-awesome/icons/key';
   import 'vue-awesome/icons/eye';
+  import 'vue-awesome/icons/shield-alt';
 
   function getPreviewType(file, maxSize) {
     if(!file || !file.metadata) return false;
@@ -118,7 +130,12 @@
         error: '',
         config: {},
         archiveToken: '',
-        preview: false
+        preview: false,
+        ssoRequired: false,
+        ssoDenied: false,
+        ssoLoginUrl: '',
+        ssoOrgName: '',
+        ssoMessage: '',
       }
     },
 
@@ -207,19 +224,50 @@
               });
               this.loading = false;
               this.needsPassword = false;
+              this.ssoRequired = false;
+              this.ssoDenied = false;
             }
             catch (e) {
               this.error = e.toString();
             }
           } else if (xhr.status === 401) {
+            try {
+              const resData = JSON.parse(xhr.responseText);
+              if (resData.error === 'SSO_REQUIRED') {
+                this.ssoRequired = true;
+                this.ssoLoginUrl = resData.loginUrl;
+                this.ssoOrgName = resData.orgName || resData.org;
+                this.ssoMessage = resData.message;
+                this.loading = false;
+                return;
+              }
+            } catch {
+              // Not JSON SSO response
+            }
+
             if(this.needsPassword) {
               this.passwordWrong = true;
             } else {
               this.needsPassword = true;
             }
             this.loading = false;
+          } else if (xhr.status === 403) {
+            try {
+              const resData = JSON.parse(xhr.responseText);
+              if (resData.error === 'ORG_DENIED') {
+                this.ssoDenied = true;
+                this.ssoMessage = resData.message;
+                this.loading = false;
+                return;
+              }
+            } catch {
+              // Not JSON SSO response
+            }
+            this.error = `${ xhr.status } ${ xhr.statusText }: ${ xhr.responseText }`;
+            this.loading = false;
           } else {
             this.error = `${ xhr.status } ${ xhr.statusText }: ${ xhr.responseText }`;
+            this.loading = false;
           }
         };
         xhr.send();
