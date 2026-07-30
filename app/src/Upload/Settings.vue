@@ -4,6 +4,43 @@
       .panel-heading
         strong {{ $root.lang.settings }}
       .panel-body
+        .form-group(v-if="config && config.ssoEnabled && config.availableOrgs && config.availableOrgs.length")
+          label {{ $root.lang.transferMode || 'Transfer Security' }}
+          .radio
+            label
+              input(
+                type="radio"
+                name="orgMode"
+                value="standard"
+                :checked="!isOrgMode"
+                @change="setOrgMode('standard')"
+                :disabled="disabled"
+              )
+              |  {{ $root.lang.standardTransfer || 'Standard Transfer (Public / Password Only)' }}
+          .radio
+            label
+              input(
+                type="radio"
+                name="orgMode"
+                value="org"
+                :checked="isOrgMode"
+                @change="setOrgMode('org')"
+                :disabled="disabled"
+              )
+              |  {{ $root.lang.orgTransfer || 'Secure Organization Transfer (SSO Required)' }}
+          .form-group(v-if="isOrgMode", style="margin-top: 10px;")
+            label(for="orgSelect") {{ $root.lang.selectOrg || 'Select Target Organization' }}
+            select#orgSelect.form-control(
+              :value="selectedOrg"
+              @change="$store.commit('upload/ORG', $event.target.value)"
+              :disabled="disabled"
+            )
+              option(
+                v-for="orgItem in config.availableOrgs"
+                :value="orgItem.domain"
+                :selected="orgItem.domain === selectedOrg"
+              ) {{ orgItem.name }} ({{ orgItem.domain }})
+
         .form-group
           label(for='retention') {{ $root.lang.retention }}
           |
@@ -71,17 +108,35 @@
   export default {
     name: 'Settings',
 
+    data() {
+      return {
+        isOrgMode: false,
+      };
+    },
+
     computed: mapState({
       config: 'config',
       disabled: 'disabled',
       retention: state => state.upload.retention,
       password: state => state.upload.password,
+      selectedOrg: state => state.upload.org,
     }),
 
     methods: {
       generatePassword() {
         if (this.disabled) return;
         this.$store.commit('upload/PASSWORD', passGen.generate(10));
+      },
+      setOrgMode(mode) {
+        if (mode === 'standard') {
+          this.isOrgMode = false;
+          this.$store.commit('upload/ORG', '');
+        } else {
+          this.isOrgMode = true;
+          if (this.config.availableOrgs && this.config.availableOrgs.length) {
+            this.$store.commit('upload/ORG', this.config.availableOrgs[0].domain);
+          }
+        }
       }
     }
   };
