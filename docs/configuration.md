@@ -5,6 +5,8 @@ First of all, I'll give an overview about the configuration options. See the
 possible values. I do **not** recommend changing this file directly, better use one
 of the following options.
 
+For **Selective SSO, Organization Access Control, and Prometheus Metrics**, see [sso-and-security.md](sso-and-security.md).
+
 ## Config file: NODE_ENV related
 
 PsiTransfer searches for an config file with the name `config.<NODE_ENV>.js` in the
