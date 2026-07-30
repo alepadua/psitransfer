@@ -54,4 +54,11 @@ module.exports = {
     "2419200": "4 Semanas",
     "4838400": "8 Semanas"
   },
+  created: "Criado em",
+  downloaded: "Baixado em",
+  expire: "Expiração",
+  size: "Tamanho",
+  sum: "Soma",
+  passwordProtected: "Protegido por senha",
+  refresh: "Atualizar",
 }

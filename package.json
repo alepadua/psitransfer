@@ -13,21 +13,20 @@
   "bugs": "https://github.com/psi-4ward/psitransfer/issues",
   "main": "app.js",
   "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
     "archiver": "^8.0.0",
     "axios": "^1.16.1",
     "common-streams": "^1.4.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
-    "@node-rs/argon2": "^2.0.2",
     "debug": "^4.4.3",
     "express": "^5.2.1",
-    "fs-promise": "^2.0.3",
+    "express-rate-limit": "^7.5.1",
     "http-errors": "^2.0.1",
     "method-override": "^3.0.0",
     "morgan": "^1.10.1",
     "pug": "^3.0.4",
-    "tar-stream": "^3.2.0",
-    "to-object-reducer": "^1.0.1"
+    "tar-stream": "^3.2.0"
   },
   "bin": {
     "psitransfer": "cli.js"
@@ -38,12 +37,18 @@
     "debug": "node --inspect app.js",
     "test": "node --test 'tests/**/*.test.js'",
     "test:unit": "node --test tests/unit/*.test.js",
-    "test:integration": "node --test tests/integration/*.test.js"
+    "test:integration": "node --test tests/integration/*.test.js",
+    "lint": "eslint 'lib/**/*.js' *.js",
+    "format": "prettier --write 'lib/**/*.js' *.js"
   },
   "engines": {
-    "node": ">= 24"
+    "node": ">= 18"
   },
   "author": "Christoph Wiechert <wio@psitrax.de>",
   "contributors": [],
-  "license": "BSD-2-Clause"
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6"
+  }
 }

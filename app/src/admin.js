@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { httpGet } from "./common/util";
 import Admin from './Admin.vue';
 import Icon from 'vue-awesome/components/Icon'
 
@@ -30,7 +31,15 @@ Vue.component('icon', Icon);
 new Vue({
   el: '#admin',
   data: {
-    baseURI: document.head.getElementsByTagName('base')[0].href
+    baseURI: document.head.getElementsByTagName('base')[0].href,
+    lang: {},
+  },
+  async beforeCreate() {
+    try {
+      this.lang = await httpGet('lang.json');
+    } catch (e) {
+      console.error('Failed to load translations', e);
+    }
   },
   render: h => h(Admin)
 });

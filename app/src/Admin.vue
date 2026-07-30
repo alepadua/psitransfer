@@ -1,6 +1,6 @@
 <template lang="pug">
   .download-app
-    a.btn.btn-sm.btn-info.btn-admin-refresh(@click='login()', title='Refresh', v-if="loggedIn")
+    a.btn.btn-sm.btn-info.btn-admin-refresh(@click='login()', :title="$root.lang.refresh || 'Refresh'", v-if="loggedIn")
       icon(name="sync-alt")
 
     .alert.alert-danger(v-show="error")
@@ -8,31 +8,31 @@
         icon.fa-fw(name="exclamation-triangle")
         |  {{ error }}
     form.well(v-if='!loggedIn', @submit.stop.prevent="login")
-      h3 Password
+      h3 {{ $root.lang.password || 'Password' }}
       .form-group
         input.form-control(type='password', v-model='password', autofocus="")
       p.text-danger(v-show='passwordWrong')
-        strong Access denied!
+        strong {{ $root.lang.accessDenied || 'Access denied!' }}
       |
       button.btn.btn-primary(type="submit", :disabled="!password")
         icon.fa-fw(name="sign-in-alt")
-        |  login
+        |  {{ $root.lang.login || 'login' }}
 
     div(v-if="loggedIn")
       table.table.table-hover
         thead
           tr
             th SID
-            th Created
-            th Downloaded
-            th Expire
-            th Size
+            th {{ $root.lang.created || 'Created' }}
+            th {{ $root.lang.downloaded || 'Downloaded' }}
+            th {{ $root.lang.expire || 'Expire' }}
+            th {{ $root.lang.size || 'Size' }}
         template(v-for="(bucket, sid) in db")
           tbody(:class="{expanded: expand===sid}")
             tr.bucket(@click="expandView(sid)")
               td
                 | {{ sid }}
-                icon.pull-right(name="key", v-if="sum[sid].password", title="Password protected")
+                icon.pull-right(name="key", v-if="sum[sid].password", :title="$root.lang.passwordProtected || 'Password protected'")
               td {{ sum[sid].created | date }}
               td
                 template(v-if="sum[sid].lastDownload") {{ sum[sid].lastDownload | date}}
@@ -56,7 +56,7 @@
         tfoot
           tr
             td(colspan="3")
-            td.text-right(colspan="2") Sum: {{ humanFileSize(sizeSum) }}
+            td.text-right(colspan="2") {{ $root.lang.sum || 'Sum' }}: {{ humanFileSize(sizeSum) }}
 
 </template>
 

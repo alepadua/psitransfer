@@ -55,4 +55,11 @@ module.exports = {
     "4838400": "8 Weeks"
   },
   uploadPassword: "Password for uploading",
+  created: "Created",
+  downloaded: "Downloaded",
+  expire: "Expire",
+  size: "Size",
+  sum: "Sum",
+  passwordProtected: "Password protected",
+  refresh: "Refresh",
 }
